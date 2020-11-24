@@ -301,7 +301,8 @@ All reference data can be fetched from `HTTP GET /api/refdata/` which returns a 
                 "Bee"
             ],
             "defaultDescription": "The Letter B is number 2 in the alphabet"
-        }...
+        },
+	...
     ],
     "placeOfBirths": [
         "Kings College Hospital",
