@@ -1,6 +1,6 @@
 # API Spec for Upwork Job
 
-Last updated: 2020-11-24
+Last updated: 2020-11-26
 
 This spec lists all the endpoints in the API and how to use them.
 
@@ -78,160 +78,75 @@ To log out at any point (assuming the user is already logged in)
 
 `HTTP DELETE /api/login`
 
-## Fetching User Data
+## User Resource
 
-There is only one piece of JSON that needs to be fetched. This is:
+Resource URI: `/api/user`  (note that no 'Id' is required because the user is derived from Auth code in the cookie)
 
-`HTTP GET /api/data` should return `200` Status Code with JSON like:
+`HTTP GET` 
 
-```json
-{
-    "user": {
-        "phoneNumber": "07777777777",
-        "firstName": "Alice",
-        "lastName": "Smith",
-        "estimatedDueDate": "2020-01-01T00:00:00",
-        "placeOfBirth": "LocationX",
-        "birthPartnersArray": [],
-        "expecting": "A Boy"
-    },
-    "birthPlans": [
-        {
-            "id": 6,
-            "displayOrder": 0,
-            "name": "Secondary Plan",
-            "title": "This is some other custom text for the secondary plan",
-            "layoutItems": [
-                {
-                    "x": 1,
-                    "y": 1,
-                    "width": 3,
-                    "height": 2,
-                    "imageId": 1,
-                    "itemText": "This is where things should start"
-                },
-                {
-                    "x": 5,
-                    "y": 5,
-                    "width": 3,
-                    "height": 2,
-                    "imageId": 25,
-                    "itemText": "One before the very end"
-                },
-                {
-                    "x": 5,
-                    "y": 5,
-                    "width": 3,
-                    "height": 2,
-                    "imageId": 0,
-                    "itemText": "This is just a very long message. And no picture"
-                }
-            ],
-            "items": []
-        },
-        {
-            "id": 7,
-            "displayOrder": 0,
-            "name": "Main",
-            "title": "This is how I really want things to go",
-            "layoutItems": [
-                {
-                    "x": 1,
-                    "y": 1,
-                    "width": 3,
-                    "height": 2,
-                    "imageId": 5,
-                    "itemText": "The second vowel of the alphabet"
-                },
-                {
-                    "x": 4,
-                    "y": 1,
-                    "width": 3,
-                    "height": 2,
-                    "imageId": 26,
-                    "itemText": "The end of the road for me!"
-                }
-            ],
-            "items": []
-        }
-    ],
-    "readOnlyShares": [
-        {
-            "id": 1,
-            "sharedWithUserId": 3,
-            "sharedWithPhoneNumber": "07999999999",
-            "sharedWithUserName": "Charlie",
-            "accessRight": 1
-        }
-    ],
-    "otherBirthPlans": []
-}
-```
+* Will return the logged in user
 
-If the Status Code is not `200`, an error message should be show.
+`HTTP PUT` 
 
-## Updating User Data
+  * Amend user
 
-Changes to any of the `Data.User` fields, should saved by doing `HTTP POST /api/user/` with the `User` object as the body. e.g:
+#### Example `User` resource
 
 ```json
 {
     "phoneNumber": "07777777777",
     "firstName": "Alice",
     "lastName": "Smith",
-    "estimatedDueDate": "2020-01-01",
+    "estimatedDueDate": "2020-01-01T00:00:00",
     "placeOfBirth": "LocationX",
-    "birthPartnersArray": [],
+    "birthPartnersArray": [
+        {
+            "relation": "Partner",
+            "name": "John"
+        },
+        {
+            "relation": "Doula",
+            "name": "Jane"
+        }
+    ],
     "expecting": "A Boy"
 }
 ```
 
-The result should be a `200` Status Code. If not, an error message should be shown.
+If the Status Code is not `200`, an error message should be show.
 
-After updating the data, it is important to refresh the `Data` (see Fetching User Data section above)
+## BirthPlan Resource
 
-# Inserting/Updating/Deleting Birth Plan Data
+Resource URI: `/api/birthplan` 
 
-### Inserting BirthPlan Data
+`HTTP GET` 
 
-`HTTP POST /api/plan` with JSON like:
+* Will return an array of `BirthPlan ` (owned by the logged in user)
 
-```json
-{
-    "Name": "Main",
-    "Title": "This is how I really want things to go",
-	"Items": [],
-    "LayoutItems":[
-        {
-            "X": 1,
-            "Y": 1,
-            "Width": 3,
-            "Height": 2,
-            "ImageId": 5,
-            "ItemText": "The second vowel of the alphabet"
-        },
-        {
-            "X": 4,
-            "Y": 1,
-            "Width": 3,
-            "Height": 2,
-            "ImageId": 26,
-            "ItemText": "The end of the road for me!"
-        }
-    ]
-}
-```
+`HTTP GET /api/birthplan/{id}` 
 
-### Updating BirthPlan Data
+  * Will return a single `BirthPlan` for the given id (or a `404` if not found)
 
-`HTTP PUT /api/plan/{Id}` with JSON like (important: with Id field):
+`HTTP POST /api/birthplan` 
+
+  * To create a new `BirthPlan`. The created `BirthPlan` will be returned
+
+`HTTP PUT /api/birthplan/{id}` 
+
+  * To update an existing `BirthPlan`. The updated `BirthPlan` will be returned (or a `404` if not found)
+
+`HTTP DELETE /api/birthplan/{id}` 
+
+  * To delete an existing `BirthPlan` (will return `404` if not found)
+
+#### Example `BirthPlan` resource
 
 ```json
 {
-    "id": 7,
+    "id": 8,
     "displayOrder": 0,
-    "name": "A New Name!",
-    "title": "This is how I really want things to go actually!",
+    "name": "Secondary Updated Plan",
+    "title": "If things don't go as planned, I'm happy with this",
     "layoutItems": [
         {
             "x": 1,
@@ -239,7 +154,7 @@ After updating the data, it is important to refresh the `Data` (see Fetching Use
             "width": 3,
             "height": 2,
             "imageId": 5,
-            "itemText": "The second vowel of the alphabet!"
+            "itemText": "The second vowel of the alphabet..."
         },
         {
             "x": 4,
@@ -254,30 +169,109 @@ After updating the data, it is important to refresh the `Data` (see Fetching Use
 }
 ```
 
-### Deleting BirthPlan Data
+## Share Resource
 
-`HTTP DELETE /api/plan/{Id}` with no body
+This is a list of people who the user has shared their BirthPlans with.
 
-## Sharing With Others
+Resource URI: `/api/share` 
 
-### To Share
+`HTTP GET` 
 
-`HTTP POST /api/share` with JSON including details of the person to share with:
+* Will return an array of `Share`s (owned by the logged in user)
+
+`HTTP POST /api/share` 
+
+  * To create a new `Share`. Only requires two fields:  `{"PhoneNumber": "07999999999","UserName": "Charlie"}` . Will return the newly created `Share`.
+
+`HTTP DELETE /api/share/{shareId}` 
+
+  * To delete a Share (will return `404` if not found)
+
+### Example Share[] resource
 
 ```json
-{
-    "PhoneNumber": "07999999999",
-    "UserName": "Charlie"
-}
+[
+    {
+        "id": 1,
+        "sharedWithUserId": 3,
+        "sharedWithPhoneNumber": "07999999999",
+        "sharedWithUserName": "Charlie"
+    },
+    {
+        "id": 2,
+        "sharedWithUserId": 5,
+        "sharedWithPhoneNumber": "07888888888"
+    },
+]
 ```
 
-### To Unshare
+## OtherBirthPlans Resource
 
-`HTTP DELETE /api/share/{id}` where `id` is from `Data.ReadOnlyShares[index].Id`
+This is a list of `BirthPlan`s that other people have shared with the current user. The current user can only view them (no editing allowed).
+
+Resource URI: `/api/otherbirthplans` 
+
+* Will return an array of `OtherBirthPlans`s (for the logged in user)
+
+`HTTP GET /api/otherbirthplans` 
+
+```json
+[
+    {
+        "shareId": 1,
+        "sharedByUserId": 2,
+        "sharedByUserName": "Alice",
+        "birthPlans": [
+            {
+                "id": 8,
+                "displayOrder": 0,
+                "name": "Secondary Updated Plan",
+                "title": "If things don't go as planned, I'm happy with this",
+                "layoutItems": [
+                    {
+                        "x": 4,
+                        "y": 1,
+                        "width": 3,
+                        "height": 2,
+                        "imageId": 26,
+                        "itemText": "The end of the road for me!"
+                    },
+                    {
+                        "x": 1,
+                        "y": 1,
+                        "width": 3,
+                        "height": 2,
+                        "imageId": 5,
+                        "itemText": "The second vowel of the alphabet..."
+                    }
+                ],
+                "items": []
+            },
+            {
+                "id": 9,
+                "displayOrder": 0,
+                "name": "Thirdly",
+                "title": "If things don't go as planned, I'm happy with this",
+                "layoutItems": [
+                    {
+                        "x": 1,
+                        "y": 1,
+                        "width": 3,
+                        "height": 2,
+                        "imageId": 5,
+                        "itemText": "The second vowel of the alphabet"
+                    }
+                ],
+                "items": []
+            }
+        ]
+    }
+]
+```
 
 ## Fetching ReferenceData
 
-All reference data can be fetched from `HTTP GET /api/refdata/` which returns a JSON like:
+All reference data can be fetched from `HTTP GET /api/refdata` which returns a JSON like:
 
 ```json
 {
@@ -301,8 +295,7 @@ All reference data can be fetched from `HTTP GET /api/refdata/` which returns a 
                 "Bee"
             ],
             "defaultDescription": "The Letter B is number 2 in the alphabet"
-        },
-	...
+        }...
     ],
     "placeOfBirths": [
         "Kings College Hospital",
@@ -321,3 +314,4 @@ All reference data can be fetched from `HTTP GET /api/refdata/` which returns a 
     ]
 }
 ```
+
